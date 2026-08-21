@@ -1,1349 +1,786 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ad Impact Pro - Agency Management System</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts: Tajawal & Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    body { font-family: 'Tajawal', 'Inter', sans-serif; }
-    .ltr { direction: ltr; font-family: 'Inter', sans-serif; }
-    .rtl { direction: rtl; font-family: 'Tajawal', sans-serif; }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Impact Pro - نظام إدارة الميزانيات والعمولات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased rtl" id="appBody">
+<body class="bg-slate-900 text-slate-100 min-h-screen">
 
-  <!-- Header / Navigation Bar -->
-  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-xl">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      
-      <!-- Logo & Brand -->
-      <div class="flex items-center space-x-3 space-x-reverse">
-        <div class="bg-indigo-600 text-white p-2.5 rounded-xl font-black text-xl shadow-lg shadow-indigo-500/30">
-          <i class="fa-solid me-1 fa-chart-line"></i>
-        </div>
-        <div>
-          <h1 class="text-lg font-extrabold text-white tracking-wide">Ad Impact <span class="text-indigo-400">Pro</span></h1>
-          <p class="text-xs text-slate-400" id="txt-sub-header">نظام إدارة الوكالة والمالية</p>
-        </div>
-      </div>
-
-      <!-- Controls: User Role & Language Switcher -->
-      <div class="flex items-center space-x-3 space-x-reverse">
-        <!-- Switch Role Dropdown -->
-        <div class="relative">
-          <select id="userRoleSelect" onchange="changeUserRole(this.value)" class="bg-slate-800 border border-slate-700 text-xs text-slate-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer">
-            <option value="admin">👤 المدير العام (Admin)</option>
-            <!-- Media Buyers Options will be rendered dynamically -->
-          </select>
-        </div>
-
-        <!-- Language Toggle Button -->
-        <button onclick="toggleLanguage()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-3 py-2 rounded-lg font-bold flex items-center gap-2 transition">
-          <i class="fa-solid fa-globe text-indigo-400"></i>
-          <span id="langLabel">English</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Sub-Header Navigation Tabs -->
-    <nav class="bg-slate-900/80 backdrop-blur border-t border-slate-800/60 overflow-x-auto">
-      <div class="max-w-7xl mx-auto px-4 flex space-x-1 space-x-reverse text-sm font-medium">
-        <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn px-4 py-3 border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 whitespace-nowrap">
-          <i class="fa-solid fa-gauge"></i> <span data-i18n="overview">اللوحة الرئيسية</span>
-        </button>
-        <button onclick="switchTab('clients')" id="tab-clients" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-          <i class="fa-solid fa-users"></i> <span data-i18n="clients">الزبائن والمنتجات</span>
-        </button>
-        <button onclick="switchTab('payments')" id="tab-payments" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-          <i class="fa-solid fa-wallet"></i> <span data-i18n="payments">الشحن والمدفوعات</span>
-        </button>
-        <button onclick="switchTab('spends')" id="tab-spends" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-          <i class="fa-solid fa-rectangle-ad"></i> <span data-i18n="spends">الصرف اليومي</span>
-        </button>
-        <button onclick="switchTab('archive')" id="tab-archive" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-          <i class="fa-solid fa-box-archive"></i> <span data-i18n="archive">الأرشيف الشهري</span>
-        </button>
-        <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-          <i class="fa-solid fa-gear"></i> <span data-i18n="settings">الإعدادات والنسخ</span>
-        </button>
-      </div>
-    </nav>
-  </header>
-
-  <!-- Universal Multi-Select Filter Bar -->
-  <section class="bg-slate-900 border-b border-slate-800/80 py-3 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
-      
-      <!-- Filter Clients -->
-      <div>
-        <label class="block text-xs text-slate-400 font-semibold mb-1" data-i18n="filterClients">فلترة حسب الزبائن:</label>
-        <select id="filterClientSelect" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-          <option value="ALL" data-i18n="allClients">جميع الزبائن</option>
-        </select>
-      </div>
-
-      <!-- Filter Products -->
-      <div>
-        <label class="block text-xs text-slate-400 font-semibold mb-1" data-i18n="filterProducts">فلترة حسب المنتجات:</label>
-        <select id="filterProductSelect" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-          <option value="ALL" data-i18n="allProducts">جميع المنتجات</option>
-        </select>
-      </div>
-
-      <!-- Date Range: Start Date -->
-      <div>
-        <label class="block text-xs text-slate-400 font-semibold mb-1" data-i18n="fromDate">من تاريخ:</label>
-        <input type="date" id="filterStartDate" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-      </div>
-
-      <!-- Date Range: End Date -->
-      <div>
-        <label class="block text-xs text-slate-400 font-semibold mb-1" data-i18n="toDate">إلى تاريخ:</label>
-        <input type="date" id="filterEndDate" onchange="applyFilters()" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-      </div>
-    </div>
-  </section>
-
-  <!-- Main Dynamic Content Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-
-    <!-- 1. OVERVIEW / DASHBOARD TAB -->
-    <section id="view-overview" class="space-y-6">
-      
-      <!-- Top Financial KPIs Cards Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Card 1: Total Payments -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs text-slate-400 font-semibold" data-i18n="kpiPayments">إجمالي الشحن / المدفوعات</p>
-              <h3 class="text-2xl font-black text-emerald-400 mt-1" id="kpi-total-payments">$0.00</h3>
-            </div>
-            <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl"><i class="fa-solid fa-money-bill-wave text-xl"></i></div>
-          </div>
-        </div>
-
-        <!-- Card 2: Total Ad Spends -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs text-slate-400 font-semibold" data-i18n="kpiSpends">إجمالي الصرف الإعلاني</p>
-              <h3 class="text-2xl font-black text-indigo-400 mt-1" id="kpi-total-spends">$0.00</h3>
-            </div>
-            <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl"><i class="fa-solid fa-rectangle-ad text-xl"></i></div>
-          </div>
-        </div>
-
-        <!-- Card 3: Agency Net Profit / MB Commission -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs text-slate-400 font-semibold" id="lbl-kpi-profit" data-i18n="kpiNetProfit">صافي أرباح الوكالة</p>
-              <h3 class="text-2xl font-black text-amber-400 mt-1" id="kpi-net-profit">$0.00</h3>
-            </div>
-            <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl"><i class="fa-solid fa-sack-dollar text-xl"></i></div>
-          </div>
-        </div>
-
-        <!-- Card 4: Remaining Budget -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs text-slate-400 font-semibold" data-i18n="kpiRemainingBudget">الميزانيات المتبقية</p>
-              <h3 class="text-2xl font-black text-cyan-400 mt-1" id="kpi-remaining-budget">$0.00</h3>
-            </div>
-            <div class="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl"><i class="fa-solid fa-vault text-xl"></i></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Financial Chart (Payments vs Daily Spends) -->
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-        <h2 class="text-sm font-bold text-slate-200 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-chart-area text-indigo-400"></i> <span data-i18n="chartTitle">تحليل مقارنة المقبوضات والصرف اليومي</span>
-        </h2>
-        <div class="h-64">
-          <canvas id="overviewChart"></canvas>
-        </div>
-      </div>
-
-      <!-- Budget Burn Alerts Table -->
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-        <h2 class="text-sm font-bold text-slate-200 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> <span data-i18n="budgetStatusTitle">حالة واستهلاك ميزانيات الزبائن</span>
-        </h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-right text-xs">
-            <thead class="bg-slate-800/60 text-slate-400 uppercase border-b border-slate-800">
-              <tr>
-                <th class="p-3" data-i18n="tblClient">الزبون</th>
-                <th class="p-3" data-i18n="tblTotalPaid">إجمالي الشحن</th>
-                <th class="p-3" data-i18n="tblTotalSpend">إجمالي الصرف</th>
-                <th class="p-3" data-i18n="tblRemaining">المتبقي</th>
-                <th class="p-3" data-i18n="tblBurnRate">نسبة الاستهلاك</th>
-                <th class="p-3" data-i18n="tblStatus">الحالة</th>
-              </tr>
-            </thead>
-            <tbody id="budgetStatusTableBody" class="divide-y divide-slate-800 text-slate-300">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Media Buyers Performance Overview (Admin Only) -->
-      <div id="section-mb-performance" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-        <h2 class="text-sm font-bold text-slate-200 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-users-viewfinder text-indigo-400"></i> <span data-i18n="mbPerfTitle">نظرة عامة على أداء فريق الميديا بايرز</span>
-        </h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-right text-xs">
-            <thead class="bg-slate-800/60 text-slate-400 uppercase border-b border-slate-800">
-              <tr>
-                <th class="p-3" data-i18n="tblMBName">الميديا باير</th>
-                <th class="p-3" data-i18n="tblClientCount">عدد الزبائن</th>
-                <th class="p-3" data-i18n="tblTotalSpend">إجمالي الصرف</th>
-                <th class="p-3" data-i18n="tblAgencyProfit">أرباح الوكالة</th>
-                <th class="p-3" data-i18n="tblMBCommission">عمولة الميديا باير</th>
-              </tr>
-            </thead>
-            <tbody id="mbPerformanceTableBody" class="divide-y divide-slate-800 text-slate-300">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2. CLIENTS & PRODUCTS TAB -->
-    <section id="view-clients" class="hidden space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="flex flex-col lg:flex-row min-h-screen">
         
-        <!-- Form: Add Client & Product -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-          <h2 class="text-sm font-bold text-slate-200 border-b border-slate-800 pb-3 flex items-center gap-2">
-            <i class="fa-solid fa-user-plus text-indigo-400"></i> <span data-i18n="addClientTitle">إضافة زبون ومنتج جديد</span>
-          </h2>
-          
-          <form id="formAddClient" onsubmit="handleAddClient(event)" class="space-y-3">
+        <!-- Navigation Sidebar -->
+        <aside class="w-full lg:w-72 bg-slate-950 p-6 border-b lg:border-b-0 lg:border-l border-slate-800 flex flex-col justify-between shrink-0">
             <div>
-              <label class="block text-xs text-slate-400 mb-1" data-i18n="clientNameLabel">اسم الزبون / الشركة</label>
-              <input type="text" id="inputClientName" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-            </div>
-
-            <div>
-              <label class="block text-xs text-slate-400 mb-1" data-i18n="assignMBLabel">تعيين ميديا باير مسؤول</label>
-              <select id="selectAssignMB" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-                <!-- Rendered dynamically -->
-              </select>
-            </div>
-
-            <div class="border-t border-slate-800 pt-3">
-              <p class="text-xs font-bold text-indigo-400 mb-2" data-i18n="firstProductTitle">تفاصيل المنتج الأول للزبون:</p>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1" data-i18n="prodNameLabel">اسم المنتج</label>
-                <input type="text" id="inputProductName" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-              </div>
-              <div class="grid grid-cols-2 gap-2 mt-2">
-                <div>
-                  <label class="block text-xs text-slate-400 mb-1" data-i18n="marginLabel">نسبة الربح Margin %</label>
-                  <input type="number" step="0.1" id="inputMargin" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
+                <div class="flex items-center gap-3 mb-8 border-b border-slate-800 pb-4">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-600/40">AI</div>
+                    <div>
+                        <h1 class="text-xl font-bold text-white leading-none">Ad Impact</h1>
+                        <span class="text-xs text-indigo-400 font-medium">Media Buying System</span>
+                    </div>
                 </div>
-                <div>
-                  <label class="block text-xs text-slate-400 mb-1" data-i18n="cashbackLabel">الكاشباك Cashback %</label>
-                  <input type="number" step="0.1" id="inputCashback" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
+
+                <nav class="space-y-2">
+                    <button onclick="switchTab('tab-dashboard')" class="nav-btn w-full text-right px-4 py-3 rounded-xl bg-indigo-600 text-white font-medium transition text-sm flex items-center gap-3">
+                        <span>📈</span> الرئيسية والتحليلات
+                    </button>
+                    <button onclick="switchTab('tab-payments')" class="nav-btn w-full text-right px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition text-sm flex items-center gap-3">
+                        <span>💵</span> شحن الميزانيات والمدفوعات
+                    </button>
+                    <button onclick="switchTab('tab-daily-spend')" class="nav-btn w-full text-right px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition text-sm flex items-center gap-3">
+                        <span>📢</span> تسجيل الصرف اليومي
+                    </button>
+                    <button onclick="switchTab('tab-clients')" class="nav-btn w-full text-right px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition text-sm flex items-center gap-3">
+                        <span>👥</span> الزبائن والمنتجات
+                    </button>
+                    <button onclick="switchTab('tab-archives')" class="nav-btn w-full text-right px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition text-sm flex items-center gap-3">
+                        <span>📁</span> الأرشيف والفواتير
+                    </button>
+                </nav>
+            </div>
+
+            <div class="text-xs text-slate-500 pt-6 border-t border-slate-800 space-y-1">
+                <div>نظام الحفظ الذاتي: <span class="text-emerald-400 font-bold">مفعل</span></div>
+                <div>بدون الحاجة لـ Google Sheets</div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+
+            <!-- 1. TAB: DASHBOARD -->
+            <section id="tab-dashboard" class="tab-content active space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">اللوحة الرئيسية والتحليلات</h2>
+                        <p class="text-slate-400 text-xs mt-1">متابعة التدفق المالي، الأرباح، ونسب استهلاك الميزانيات</p>
+                    </div>
                 </div>
-              </div>
-            </div>
 
-            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-2.5 rounded-lg shadow-lg shadow-indigo-500/20 transition" data-i18n="btnSaveClient">
-              حفظ الزبون والمنتج
-            </button>
-          </form>
-        </div>
+                <!-- Multi-Filter Bar -->
+                <div class="bg-slate-800/90 border border-slate-700/80 p-5 rounded-2xl space-y-4 shadow-xl">
+                    <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">الفلاتر المتقدمة (اختيار متعدد)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">من تاريخ / إلى تاريخ</label>
+                            <input type="date" id="filterStartDate" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white">
+                            <input type="date" id="filterEndDate" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white mt-1">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">تصفية الزبائن</label>
+                            <div id="filterClientsBox" class="bg-slate-900 border border-slate-700 rounded-lg p-2 max-h-28 overflow-y-auto text-xs space-y-1"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">تصفية المنتجات</label>
+                            <div id="filterProductsBox" class="bg-slate-900 border border-slate-700 rounded-lg p-2 max-h-28 overflow-y-auto text-xs space-y-1"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">المنصات الإعلانية</label>
+                            <div id="filterPlatformsBox" class="bg-slate-900 border border-slate-700 rounded-lg p-2 max-h-28 overflow-y-auto text-xs space-y-1">
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Meta Ads" checked onchange="applyFilters()"> Meta Ads</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="TikTok Ads" checked onchange="applyFilters()"> TikTok Ads</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Snapchat Ads" checked onchange="applyFilters()"> Snapchat Ads</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Google Ads" checked onchange="applyFilters()"> Google Ads</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Clients & Products Directory List -->
-        <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-          <h2 class="text-sm font-bold text-slate-200 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-address-book text-indigo-400"></i> <span data-i18n="clientListTitle">دليل الزبائن والمنتجات المسجلة</span>
-          </h2>
-          <div id="clientsListContainer" class="space-y-4">
-            <!-- Rendered via JS -->
-          </div>
-        </div>
-      </div>
-    </section>
+                <!-- KPI Overview Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-800/80 border border-slate-700/60 p-5 rounded-2xl">
+                        <span class="text-slate-400 text-xs">إجمالي مقبوضات الزبائن</span>
+                        <h3 id="kpiTotalPayments" class="text-2xl font-bold text-sky-400 mt-1">$0.00</h3>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/60 p-5 rounded-2xl">
+                        <span class="text-slate-400 text-xs">إجمالي الصرف الإعلاني</span>
+                        <h3 id="kpiTotalSpend" class="text-2xl font-bold text-rose-400 mt-1">$0.00</h3>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/60 p-5 rounded-2xl">
+                        <span class="text-slate-400 text-xs">إجمالي أرباحك (العمولات)</span>
+                        <h3 id="kpiTotalProfit" class="text-2xl font-bold text-emerald-400 mt-1">$0.00</h3>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/60 p-5 rounded-2xl">
+                        <span class="text-slate-400 text-xs">الميزانية المتبقية للزبائن</span>
+                        <h3 id="kpiRemainingBudget" class="text-2xl font-bold text-amber-400 mt-1">$0.00</h3>
+                    </div>
+                </div>
 
-    <!-- 3. PAYMENTS & DEPOSITS TAB -->
-    <section id="view-payments" class="hidden space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Form: Log Payment -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-          <h2 class="text-sm font-bold text-slate-200 border-b border-slate-800 pb-3 flex items-center gap-2">
-            <i class="fa-solid fa-money-bill-transfer text-emerald-400"></i> <span data-i18n="addPaymentTitle">تسجيل شحن / دفعة جديدة</span>
-          </h2>
-          
-          <form id="formAddPayment" onsubmit="handleAddPayment(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1" data-i18n="selectClientLabel">اختر الزبون</label>
-              <select id="payClientSelect" onchange="updatePayProductsDropdown(this.value)" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-                <!-- Rendered JS -->
-              </select>
-            </div>
+                <!-- Interactive Financial Chart -->
+                <div class="bg-slate-800/80 border border-slate-700/60 p-6 rounded-2xl shadow-xl">
+                    <h3 class="text-sm font-bold text-slate-200 mb-4">المنحنى البياني المالي (المدفوعات vs الصرف vs الفائدة)</h3>
+                    <div class="h-80">
+                        <canvas id="mainFinanceChart"></canvas>
+                    </div>
+                </div>
 
-            <div>
-              <label class="block text-xs text-slate-400 mb-1" data-i18n="selectProductLabel">اختر المنتج</label>
-              <select id="payProductSelect" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-                <!-- Rendered JS -->
-              </select>
-            </div>
+                <!-- Product Budget Balances Table -->
+                <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl overflow-hidden">
+                    <div class="p-5 border-b border-slate-700/60 flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-white">حالة ميزانيات المنتجات المتبقية والتنبيهات</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-slate-400 uppercase border-b border-slate-700">
+                                <tr>
+                                    <th class="p-4">الزبون</th>
+                                    <th class="p-4">المنتج</th>
+                                    <th class="p-4">الميزانية الشاملة ($)</th>
+                                    <th class="p-4">المصروف إعلانياً ($)</th>
+                                    <th class="p-4">الرصيد المتبقي ($)</th>
+                                    <th class="p-4">نسبة الاستهلاك</th>
+                                </tr>
+                            </thead>
+                            <tbody id="budgetStatusTable" class="divide-y divide-slate-700/50"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-xs text-slate-400 mb-1" data-i18n="amountLabel">المبلغ ($)</label>
-                <input type="number" step="0.01" id="payAmount" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1" data-i18n="dateLabel">التاريخ</label>
-                <input type="date" id="payDate" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-              </div>
-            </div>
+            <!-- 2. TAB: PAYMENTS & BUDGET ALLOCATION -->
+            <section id="tab-payments" class="tab-content space-y-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">شحن الميزانيات ومدفوعات الزبائن</h2>
+                        <p class="text-slate-400 text-xs mt-1">تسجيل الأموال المستلمة وتخصيصها لمنتجات الزبون مع تواريخ الدفع</p>
+                    </div>
+                </div>
 
-            <div>
-              <label class="block text-xs text-slate-400 mb-1" data-i18n="notesLabel">ملاحظات / رقم الحوالة</label>
-              <input type="text" id="payNote" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-            </div>
+                <!-- Payment Form -->
+                <div class="bg-slate-800/80 border border-slate-700/60 p-6 rounded-2xl max-w-2xl">
+                    <h3 class="text-sm font-bold text-indigo-300 mb-4">تسجيل دفعة جديدة من زبون</h3>
+                    <form onsubmit="addPaymentRecord(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-slate-300 mb-1">اختر الزبون</label>
+                                <select id="payClientSelect" onchange="updatePayProductDropdown()" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                                    <option value="">-- اختر زبوناً --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-300 mb-1">تخصيص الدفعة لمنتج معين</label>
+                                <select id="payProductSelect" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                                    <option value="">-- اختر المنتج --</option>
+                                </select>
+                            </div>
+                        </div>
 
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 rounded-lg shadow-lg shadow-emerald-500/20 transition" data-i18n="btnSavePayment">
-              تسجيل الشحن
-            </button>
-          </form>
-        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-slate-300 mb-1">المبلغ المدفوع ($)</label>
+                                <input type="number" step="0.01" id="payAmount" required placeholder="مثال: 500" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-300 mb-1">تاريخ استلام الدفعة</label>
+                                <input type="date" id="payDate" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                        </div>
 
-        <!-- Payments Log Table -->
-        <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-          <h2 class="text-sm font-bold text-slate-200 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-receipt text-emerald-400"></i> <span data-i18n="paymentsLogTitle">سجل عمليات الشحن والمدفوعات</span>
-          </h2>
-          <div class="overflow-x-auto">
-            <table class="w-full text-right text-xs">
-              <thead class="bg-slate-800/60 text-slate-400 uppercase border-b border-slate-800">
-                <tr>
-                  <th class="p-3" data-i18n="tblDate">التاريخ</th>
-                  <th class="p-3" data-i18n="tblClient">الزبون</th>
-                  <th class="p-3" data-i18n="tblProduct">المنتج</th>
-                  <th class="p-3" data-i18n="tblAmount">المبلغ</th>
-                  <th class="p-3" data-i18n="tblAction">الإجراء</th>
-                </tr>
-              </thead>
-              <tbody id="paymentsTableBody" class="divide-y divide-slate-800 text-slate-300">
-                <!-- Rendered via JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
+                        <div>
+                            <label class="block text-xs text-slate-300 mb-1">ملاحظات أو طريقة الدفع (اختياري)</label>
+                            <input type="text" id="payNote" placeholder="مثال: تحويل بنكي / CCP / كاش" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                        </div>
 
-    <!-- 4. DAILY SPENDS LOG TAB -->
-    <section id="view-spends" class="hidden space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Form: Log Daily Spend -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-          <h2 class="text-sm font-bold text-slate-200 border-b border-slate-800 pb-3 flex items-center gap-2">
-            <i class="fa-solid fa-plus text-indigo-400"></i> <span data-i18n="addSpendTitle">تسجيل صرف إعلاني يومي</span>
-          </h2>
-          
-          <form id="formAddSpend" onsubmit="handleAddSpend(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1" data-i18n="selectClientLabel">اختر الزبون</label>
-              <select id="spendClientSelect" onchange="updateSpendProductsDropdown(this.value)" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-                <!-- Rendered JS -->
-              </select>
-            </div>
+                        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-sky-600/30">
+                            + تسجيل الميزانية واستخراج وصل استلام
+                        </button>
+                    </form>
+                </div>
 
-            <div>
-              <label class="block text-xs text-slate-400 mb-1" data-i18n="selectProductLabel">اختر المنتج</label>
-              <select id="spendProductSelect" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-                <!-- Rendered JS -->
-              </select>
-            </div>
+                <!-- Payments History Table -->
+                <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl overflow-hidden">
+                    <div class="p-5 border-b border-slate-700/60"><h3 class="text-sm font-bold text-white">سجل المقبوضات التاريخي</h3></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-700">
+                                <tr>
+                                    <th class="p-4">تاريخ الدفع</th>
+                                    <th class="p-4">الزبون</th>
+                                    <th class="p-4">المنتج المخصص</th>
+                                    <th class="p-4">المبلغ ($)</th>
+                                    <th class="p-4">ملاحظات</th>
+                                    <th class="p-4 text-center">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsHistoryTable" class="divide-y divide-slate-700/50"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-            <div>
-              <label class="block text-xs text-slate-400 mb-1" data-i18n="platformLabel">المنصة الإعلانية</label>
-              <select id="spendPlatform" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-                <option value="Meta Ads">Meta Ads (Facebook/Instagram)</option>
-                <option value="TikTok Ads">TikTok Ads</option>
-                <option value="Snapchat Ads">Snapchat Ads</option>
-                <option value="Google Ads">Google Ads</option>
-              </select>
-            </div>
+            <!-- 3. TAB: DAILY SPEND LOGGER -->
+            <section id="tab-daily-spend" class="tab-content space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">تسجيل الصرف الإعلاني اليومي</h2>
+                    <p class="text-slate-400 text-xs mt-1">تحديث المبالغ المصروفة إعلانياً لكل منتج ومنصة يدوياً وبسرعة</p>
+                </div>
 
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-xs text-slate-400 mb-1" data-i18n="spendAmountLabel">الصرف ($)</label>
-                <input type="number" step="0.01" id="spendAmount" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1" data-i18n="dateLabel">التاريخ</label>
-                <input type="date" id="spendDate" required class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2.5 text-slate-200 focus:ring-1 focus:ring-indigo-500">
-              </div>
-            </div>
+                <div class="bg-slate-800/80 border border-slate-700/60 p-6 rounded-2xl max-w-2xl">
+                    <h3 class="text-sm font-bold text-rose-300 mb-4">إضافة صرف إعلاني جديد</h3>
+                    <form onsubmit="addSpendRecord(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-slate-300 mb-1">الزبون</label>
+                                <select id="spClientSelect" onchange="updateSpProductDropdown()" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                                    <option value="">-- اختر زبوناً --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-300 mb-1">المنتج</label>
+                                <select id="spProductSelect" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                                    <option value="">-- اختر المنتج --</option>
+                                </select>
+                            </div>
+                        </div>
 
-            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-2.5 rounded-lg shadow-lg shadow-indigo-500/20 transition" data-i18n="btnSaveSpend">
-              تسجيل الصرف
-            </button>
-          </form>
-        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs text-slate-300 mb-1">المنصة الإعلانية</label>
+                                <select id="spPlatform" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                                    <option value="Meta Ads">Meta Ads</option>
+                                    <option value="TikTok Ads">TikTok Ads</option>
+                                    <option value="Snapchat Ads">Snapchat Ads</option>
+                                    <option value="Google Ads">Google Ads</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-300 mb-1">المبلغ المصروف ($)</label>
+                                <input type="number" step="0.01" id="spAmount" required placeholder="مثال: 80.50" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-300 mb-1">تاريخ الصرف</label>
+                                <input type="date" id="spDate" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                        </div>
 
-        <!-- Spends History Table -->
-        <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-          <h2 class="text-sm font-bold text-slate-200 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-list-check text-indigo-400"></i> <span data-i18n="spendsLogTitle">سجل عمليات الصرف الإعلاني اليومية</span>
-          </h2>
-          <div class="overflow-x-auto">
-            <table class="w-full text-right text-xs">
-              <thead class="bg-slate-800/60 text-slate-400 uppercase border-b border-slate-800">
-                <tr>
-                  <th class="p-3" data-i18n="tblDate">التاريخ</th>
-                  <th class="p-3" data-i18n="tblClient">الزبون</th>
-                  <th class="p-3" data-i18n="tblProduct">المنتج</th>
-                  <th class="p-3" data-i18n="tblPlatform">المنصة</th>
-                  <th class="p-3" data-i18n="tblAmount">الصرف</th>
-                  <th class="p-3" data-i18n="tblProfit">الربح المحقق</th>
-                  <th class="p-3" data-i18n="tblAction">الإجراء</th>
-                </tr>
-              </thead>
-              <tbody id="spendsTableBody" class="divide-y divide-slate-800 text-slate-300">
-                <!-- Rendered JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
+                        <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-rose-600/30">
+                            + تسجيل الصرف واحتساب العمولة تلقائياً
+                        </button>
+                    </form>
+                </div>
 
-    <!-- 5. DEEP MONTHLY ARCHIVES TAB -->
-    <section id="view-archive" class="hidden space-y-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-base font-bold text-slate-200 flex items-center gap-2">
-          <i class="fa-solid fa-box-archive text-indigo-400"></i> <span data-i18n="archiveTitle">سجل الأرشيف الشهري التفصيلي</span>
-        </h2>
-        <button id="btnBackToMonths" onclick="exitDeepArchive()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg font-bold">
-          <i class="fa-solid fa-arrow-right me-1"></i> <span data-i18n="btnBackArchives">الرجوع قائمة الأشهر</span>
-        </button>
-      </div>
+                <!-- Spend Log Table -->
+                <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl overflow-hidden">
+                    <div class="p-5 border-b border-slate-700/60"><h3 class="text-sm font-bold text-white">سجل الصرف الإعلاني اليومي</h3></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-700">
+                                <tr>
+                                    <th class="p-4">التاريخ</th>
+                                    <th class="p-4">الزبون</th>
+                                    <th class="p-4">المنتج</th>
+                                    <th class="p-4">المنصة</th>
+                                    <th class="p-4">الصرف ($)</th>
+                                    <th class="p-4">أرباحك المحسوبة ($)</th>
+                                    <th class="p-4 text-center">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="spendsHistoryTable" class="divide-y divide-slate-700/50"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-      <!-- Main Archives Months Grid View -->
-      <div id="archivesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Rendered via JS -->
-      </div>
+            <!-- 4. TAB: CLIENTS & PRODUCTS SETUP -->
+            <section id="tab-clients" class="tab-content space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">إدارة قاعدة الزبائن والمنتجات والعمولات</h2>
+                    <p class="text-slate-400 text-xs mt-1">إضافة زبائن جدد، ربط منتجاتهم وتحديد نسب الأرباح والكاشباك لكل منتوج</p>
+                </div>
 
-      <!-- Deep Archive Single Month Detailed View -->
-      <div id="deepArchiveContainer" class="hidden space-y-6">
-        <div class="bg-indigo-950/40 border border-indigo-800/50 rounded-xl p-5 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>
-            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider" data-i18n="deepArchiveLabel">الأرشيف التفصيلي لشهر:</span>
-            <h3 class="text-2xl font-black text-white mt-0.5" id="deepArchiveMonthTitle">2026-08</h3>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="exportArchiveCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2.5 rounded-lg font-bold shadow-lg shadow-emerald-600/20 flex items-center gap-2">
-              <i class="fa-solid fa-file-excel"></i> <span data-i18n="btnExportCSV">تصدير Excel/CSV</span>
-            </button>
-            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-4 py-2.5 rounded-lg font-bold flex items-center gap-2">
-              <i class="fa-solid fa-print"></i> <span data-i18n="btnPrintReport">طباعة التقرير</span>
-            </button>
-          </div>
-        </div>
+                <div class="bg-slate-800/80 border border-slate-700/60 p-6 rounded-2xl max-w-2xl space-y-4">
+                    <h3 class="text-sm font-bold text-indigo-300">إضافة زبون جديد مع منتجاته</h3>
+                    <form onsubmit="saveClientWithProducts(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-slate-300 mb-1">اسم الزبون / الشركة</label>
+                            <input type="text" id="cliName" required placeholder="مثال: عبد الحق" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                        </div>
 
-        <!-- Monthly Archive KPIs -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
-            <p class="text-xs text-slate-400 font-semibold" data-i18n="monthPayments">مدفوعات الشهر</p>
-            <h4 class="text-xl font-bold text-emerald-400 mt-1" id="archKpiPaid">$0.00</h4>
-          </div>
-          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
-            <p class="text-xs text-slate-400 font-semibold" data-i18n="monthSpends">صرف الشهر</p>
-            <h4 class="text-xl font-bold text-indigo-400 mt-1" id="archKpiSpent">$0.00</h4>
-          </div>
-          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
-            <p class="text-xs text-slate-400 font-semibold" data-i18n="monthProfit">أرباح الشهر الصافية</p>
-            <h4 class="text-xl font-bold text-amber-400 mt-1" id="archKpiProfit">$0.00</h4>
-          </div>
-        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-slate-300">منتجات الزبون ونسب عمولتك</label>
+                                <button type="button" onclick="addProductInputRow()" class="bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-600 hover:text-white px-3 py-1 rounded-lg text-xs font-bold transition">+ إضافة منتوج آخر</button>
+                            </div>
+                            <div id="productInputsContainer" class="space-y-3"></div>
+                        </div>
 
-        <!-- Deep Archive Tables (Payments & Spends) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Archive Payments -->
-          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-            <h4 class="text-xs font-bold text-slate-300 mb-3 border-b border-slate-800 pb-2" data-i18n="archPaymentsTitle">جدول الشحن والمدفوعات للشهر</h4>
-            <div class="overflow-x-auto">
-              <table class="w-full text-right text-xs">
-                <thead class="bg-slate-800/60 text-slate-400">
-                  <tr>
-                    <th class="p-2">التاريخ</th>
-                    <th class="p-2">الزبون</th>
-                    <th class="p-2">المبلغ</th>
-                  </tr>
-                </thead>
-                <tbody id="archPayTableBody" class="divide-y divide-slate-800"></tbody>
-              </table>
-            </div>
-          </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-600/30">حفظ الزبون والمنتجات في القاعدة</button>
+                    </form>
+                </div>
 
-          <!-- Archive Spends -->
-          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-            <h4 class="text-xs font-bold text-slate-300 mb-3 border-b border-slate-800 pb-2" data-i18n="archSpendsTitle">جدول الصرف والأرباح للشهر</h4>
-            <div class="overflow-x-auto">
-              <table class="w-full text-right text-xs">
-                <thead class="bg-slate-800/60 text-slate-400">
-                  <tr>
-                    <th class="p-2">التاريخ</th>
-                    <th class="p-2">الزبون</th>
-                    <th class="p-2">الصرف</th>
-                    <th class="p-2">الربح</th>
-                  </tr>
-                </thead>
-                <tbody id="archSpendTableBody" class="divide-y divide-slate-800"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+                <!-- Saved Clients List -->
+                <div class="bg-slate-800/80 border border-slate-700/60 p-6 rounded-2xl">
+                    <h3 class="text-sm font-bold text-white mb-4">قائمة الزبائن والمنتجات المسجلة حالياً</h3>
+                    <div id="clientsCardsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+            </section>
 
-    <!-- 6. SETTINGS & BACKUP TAB -->
-    <section id="view-settings" class="hidden space-y-6">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg space-y-6 max-w-2xl mx-auto">
-        <h2 class="text-base font-bold text-slate-200 border-b border-slate-800 pb-3 flex items-center gap-2">
-          <i class="fa-solid fa-floppy-disk text-indigo-400"></i> <span data-i18n="settingsTitle">إدارة البيانات والنسخ الاحتياطي</span>
-        </h2>
+            <!-- 5. TAB: ARCHIVES & RECEIPTS -->
+            <section id="tab-archives" class="tab-content space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">الأرشيف الشهري وفواتير الاستلام</h2>
+                    <p class="text-slate-400 text-xs mt-1">تصفح سجلات الأرشيف وحذف الأشهر القديمة حسب رغبتك</p>
+                </div>
 
-        <div class="space-y-4">
-          <div class="p-4 bg-slate-800/40 rounded-xl border border-slate-800 flex items-center justify-between">
-            <div>
-              <h3 class="text-xs font-bold text-slate-200" data-i18n="exportDataTitle">تصدير كافة بيانات النظام</h3>
-              <p class="text-xs text-slate-400 mt-1" data-i18n="exportDataSub">تنزيل ملف JSON يضم جميع الزبائن، المدفوعات والصرف لحفظه خارجياً.</p>
-            </div>
-            <button onclick="exportDatabaseJSON()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-lg shadow-indigo-600/20">
-              تصدير Backup
-            </button>
-          </div>
+                <div id="monthlyArchivesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
 
-          <div class="p-4 bg-slate-800/40 rounded-xl border border-slate-800 flex items-center justify-between">
-            <div>
-              <h3 class="text-xs font-bold text-slate-200" data-i18n="importDataTitle">استعادة بيانات سابقة</h3>
-              <p class="text-xs text-slate-400 mt-1" data-i18n="importDataSub">رفع ملف JSON لاسترجاع النظام في أي وقت.</p>
-            </div>
-            <label class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg cursor-pointer">
-              استعادة Restore
-              <input type="file" accept=".json" onchange="importDatabaseJSON(event)" class="hidden">
-            </label>
-          </div>
-
-          <div class="p-4 bg-rose-950/20 rounded-xl border border-rose-900/40 flex items-center justify-between">
-            <div>
-              <h3 class="text-xs font-bold text-rose-300" data-i18n="resetDataTitle">تصفير كافة بيانات النظام</h3>
-              <p class="text-xs text-rose-400/80 mt-1" data-i18n="resetDataSub">حذف كافة البيانات بشكل نهائي والبدء من جديد.</p>
-            </div>
-            <button onclick="resetAllData()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-lg shadow-rose-600/20">
-              تصفير الكل
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- RECEIPT / INVOICE MODAL -->
-  <div id="invoiceModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white text-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b pb-3">
-        <h3 class="font-extrabold text-lg">وصل استلام دفعة / Receipt</h3>
-        <button onclick="closeInvoiceModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <div id="invoiceModalContent" class="text-xs space-y-3">
-        <!-- Rendered Modal Content -->
-      </div>
-      <div class="border-t pt-3 flex justify-end gap-2">
-        <button onclick="window.print()" class="bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-lg">طباعة الفاتورة</button>
-      </div>
+        </main>
     </div>
-  </div>
 
-  <!-- JAVASCRIPT APPLICATION CORE -->
-  <script>
-    // ==========================================
-    // 1. STATE & STORAGE MANAGEMENT
-    // ==========================================
-    const DEFAULT_STATE = {
-      lang: 'ar',
-      currentUser: 'admin',
-      activeTab: 'overview',
-      users: [
-        { id: 'admin', name: 'المدير العام (Admin)', role: 'admin' },
-        { id: 'mb1', name: 'أحمد - Media Buyer', role: 'mb', commission: 10 },
-        { id: 'mb2', name: 'سارة - Media Buyer', role: 'mb', commission: 15 }
-      ],
-      clients: [
-        { id: 'c1', name: 'متجر الأناقة', mbId: 'mb1' },
-        { id: 'c2', name: 'عطور الجزائر', mbId: 'mb2' }
-      ],
-      products: [
-        { id: 'p1', clientId: 'c1', name: 'Pantalon Palazzo', margin: 10, cashback: 5 },
-        { id: 'p2', clientId: 'c2', name: 'العطر الملكي', margin: 15, cashback: 5 }
-      ],
-      payments: [
-        { id: 'pay_1', clientId: 'c1', productId: 'p1', amount: 1000, date: '2026-08-01', note: 'دفعة شحن أولى', receiptNo: 'INV-1001' }
-      ],
-      spends: [
-        { id: 's_1', clientId: 'c1', productId: 'p1', platform: 'Meta Ads', amount: 250, date: '2026-08-10', mbId: 'mb1' }
-      ],
-      filters: {
-        clientId: 'ALL',
-        productId: 'ALL',
-        startDate: '',
-        endDate: ''
-      },
-      deepArchiveMonth: null
-    };
-
-    let state = loadState();
-
-    function loadState() {
-      const saved = localStorage.getItem('ad_impact_pro_db');
-      return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_STATE));
-    }
-
-    function saveState() {
-      localStorage.setItem('ad_impact_pro_db', JSON.stringify(state));
-      renderApp();
-    }
-
-    // ==========================================
-    // 2. DICTIONARY & I18N
-    // ==========================================
-    const i18n = {
-      ar: {
-        overview: "اللوحة الرئيسية", clients: "الزبائن والمنتجات", payments: "الشحن والمدفوعات",
-        spends: "الصرف اليومي", archive: "الأرشيف الشهري", settings: "الإعدادات والنسخ",
-        filterClients: "فلترة حسب الزبائن:", filterProducts: "فلترة حسب المنتجات:",
-        allClients: "جميع الزبائن", allProducts: "جميع المنتجات", fromDate: "من تاريخ:", toDate: "إلى تاريخ:",
-        kpiPayments: "إجمالي الشحن / المدفوعات", kpiSpends: "إجمالي الصرف الإعلاني",
-        kpiNetProfit: "صافي أرباح الوكالة", kpiRemainingBudget: "الميزانيات المتبقية",
-        chartTitle: "تحليل مقارنة المقبوضات والصرف اليومي", budgetStatusTitle: "حالة واستهلاك ميزانيات الزبائن",
-        mbPerfTitle: "نظرة عامة على أداء فريق الميديا بايرز", addClientTitle: "إضافة زبون ومنتج جديد",
-        clientNameLabel: "اسم الزبون / الشركة", assignMBLabel: "تعيين ميديا باير مسؤول",
-        firstProductTitle: "تفاصيل المنتج الأول للزبون:", prodNameLabel: "اسم المنتج",
-        marginLabel: "نسبة الربح Margin %", cashbackLabel: "الكاشباك Cashback %",
-        btnSaveClient: "حفظ الزبون والمنتج", clientListTitle: "دليل الزبائن والمنتجات المسجلة",
-        addPaymentTitle: "تسجيل شحن / دفعة جديدة", selectClientLabel: "اختر الزبون", selectProductLabel: "اختر المنتج",
-        amountLabel: "المبلغ ($)", dateLabel: "التاريخ", notesLabel: "ملاحظات / رقم الحوالة", btnSavePayment: "تسجيل الشحن",
-        paymentsLogTitle: "سجل عمليات الشحن والمدفوعات", addSpendTitle: "تسجيل صرف إعلاني يومي",
-        platformLabel: "المنصة الإعلانية", spendAmountLabel: "الصرف ($)", btnSaveSpend: "تسجيل الصرف",
-        spendsLogTitle: "سجل عمليات الصرف الإعلاني اليومية", archiveTitle: "سجل الأرشيف الشهري التفصيلي",
-        btnBackArchives: "الرجوع قائمة الأشهر", deepArchiveLabel: "الأرشيف التفصيلي لشهر:",
-        btnExportCSV: "تصدير Excel/CSV", btnPrintReport: "طباعة التقرير", monthPayments: "مدفوعات الشهر",
-        monthSpends: "صرف الشهر", monthProfit: "أرباح الشهر الصافية", archPaymentsTitle: "جدول الشحن والمدفوعات للشهر",
-        archSpendsTitle: "جدول الصرف والأرباح للشهر", settingsTitle: "إدارة البيانات والنسخ الاحتياطي",
-        exportDataTitle: "تصدير كافة بيانات النظام", exportDataSub: "تنزيل ملف JSON يضم جميع الزبائن لحفظه خارجياً.",
-        importDataTitle: "استعادة بيانات سابقة", importDataSub: "رفع ملف JSON لاسترجاع النظام في أي وقت.",
-        resetDataTitle: "تصفير كافة بيانات النظام", resetDataSub: "حذف كافة البيانات بشكل نهائي والبدء من جديد.",
-        tblClient: "الزبون", tblTotalPaid: "إجمالي الشحن", tblTotalSpend: "إجمالي الصرف", tblRemaining: "المتبقي",
-        tblBurnRate: "نسبة الاستهلاك", tblStatus: "الحالة", tblMBName: "الميديا باير", tblClientCount: "عدد الزبائن",
-        tblAgencyProfit: "أرباح الوكالة", tblMBCommission: "عمولة الميديا باير", tblProduct: "المنتج", tblAmount: "المبلغ",
-        tblAction: "الإجراء", tblPlatform: "المنصة", tblProfit: "الربح المحقق", tblDate: "التاريخ"
-      },
-      en: {
-        overview: "Dashboard", clients: "Clients & Products", payments: "Payments & Top-ups",
-        spends: "Daily Spends", archive: "Monthly Archives", settings: "Settings & Backup",
-        filterClients: "Filter by Client:", filterProducts: "Filter by Product:",
-        allClients: "All Clients", allProducts: "All Products", fromDate: "From Date:", toDate: "To Date:",
-        kpiPayments: "Total Top-ups", kpiSpends: "Total Ad Spend",
-        kpiNetProfit: "Agency Net Profit", kpiRemainingBudget: "Remaining Budget",
-        chartTitle: "Top-ups vs Daily Spend Analysis", budgetStatusTitle: "Client Budget Consumption Status",
-        mbPerfTitle: "Media Buyers Performance Overview", addClientTitle: "Add New Client & Product",
-        clientNameLabel: "Client / Company Name", assignMBLabel: "Assign Media Buyer",
-        firstProductTitle: "First Product Details:", prodNameLabel: "Product Name",
-        marginLabel: "Margin %", cashbackLabel: "Cashback %",
-        btnSaveClient: "Save Client & Product", clientListTitle: "Clients & Products Directory",
-        addPaymentTitle: "Log New Top-up / Payment", selectClientLabel: "Select Client", selectProductLabel: "Select Product",
-        amountLabel: "Amount ($)", dateLabel: "Date", notesLabel: "Notes / Ref", btnSavePayment: "Save Payment",
-        paymentsLogTitle: "Top-ups & Payments Log", addSpendTitle: "Log Daily Ad Spend",
-        platformLabel: "Ad Platform", spendAmountLabel: "Spend ($)", btnSaveSpend: "Save Spend",
-        spendsLogTitle: "Daily Ad Spends Log", archiveTitle: "Detailed Monthly Archives",
-        btnBackArchives: "Back to Months List", deepArchiveLabel: "Deep Archive for Month:",
-        btnExportCSV: "Export CSV/Excel", btnPrintReport: "Print Report", monthPayments: "Month Top-ups",
-        monthSpends: "Month Spends", monthProfit: "Month Net Profit", archPaymentsTitle: "Month Payments Log",
-        archSpendsTitle: "Month Spends & Profit Log", settingsTitle: "Data Management & Backup",
-        exportDataTitle: "Export Full System Data", exportDataSub: "Download JSON backup file containing all data.",
-        importDataTitle: "Restore Database", importDataSub: "Upload JSON file to restore system anytime.",
-        resetDataTitle: "Reset System Database", resetDataSub: "Permanently delete all data and start clean.",
-        tblClient: "Client", tblTotalPaid: "Total Paid", tblTotalSpend: "Total Spend", tblRemaining: "Remaining",
-        tblBurnRate: "Burn Rate", tblStatus: "Status", tblMBName: "Media Buyer", tblClientCount: "Clients",
-        tblAgencyProfit: "Agency Profit", tblMBCommission: "MB Commission", tblProduct: "Product", tblAmount: "Amount",
-        tblAction: "Action", tblPlatform: "Platform", tblProfit: "Profit", tblDate: "Date"
-      }
-    };
-
-    function toggleLanguage() {
-      state.lang = state.lang === 'ar' ? 'en' : 'ar';
-      document.getElementById('appBody').className = state.lang === 'ar' ? 'bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased rtl' : 'bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased ltr';
-      document.getElementById('appBody').dir = state.lang === 'ar' ? 'rtl' : 'ltr';
-      document.getElementById('langLabel').innerText = state.lang === 'ar' ? 'English' : 'العربية';
-      saveState();
-    }
-
-    // ==========================================
-    // 3. FINANCIAL ENGINE & DATA CALCULATIONS
-    // ==========================================
-    function getFilteredData(customMonth = null) {
-      let filteredClients = state.clients;
-      let filteredSpends = state.spends;
-      let filteredPayments = state.payments;
-
-      // Role isolation: Media Buyer only sees assigned clients
-      if (state.currentUser !== 'admin') {
-        filteredClients = filteredClients.filter(c => c.mbId === state.currentUser);
-        const allowedClientIds = filteredClients.map(c => c.id);
-        filteredSpends = filteredSpends.filter(s => allowedClientIds.includes(s.clientId));
-        filteredPayments = filteredPayments.filter(p => allowedClientIds.includes(p.clientId));
-      }
-
-      // Universal Filters
-      if (state.filters.clientId !== 'ALL') {
-        filteredSpends = filteredSpends.filter(s => s.clientId === state.filters.clientId);
-        filteredPayments = filteredPayments.filter(p => p.clientId === state.filters.clientId);
-      }
-      if (state.filters.productId !== 'ALL') {
-        filteredSpends = filteredSpends.filter(s => s.productId === state.filters.productId);
-        filteredPayments = filteredPayments.filter(p => p.productId === state.filters.productId);
-      }
-      if (state.filters.startDate) {
-        filteredSpends = filteredSpends.filter(s => s.date >= state.filters.startDate);
-        filteredPayments = filteredPayments.filter(p => p.date >= state.filters.startDate);
-      }
-      if (state.filters.endDate) {
-        filteredSpends = filteredSpends.filter(s => s.date <= state.filters.endDate);
-        filteredPayments = filteredPayments.filter(p => p.date <= state.filters.endDate);
-      }
-
-      // If viewing deep month archive
-      if (customMonth) {
-        filteredSpends = filteredSpends.filter(s => s.date.startsWith(customMonth));
-        filteredPayments = filteredPayments.filter(p => p.date.startsWith(customMonth));
-      }
-
-      return { clients: filteredClients, spends: filteredSpends, payments: filteredPayments };
-    }
-
-    function calculateMetrics(spends, payments) {
-      const totalPayments = payments.reduce((acc, p) => acc + parseFloat(p.amount || 0), 0);
-      const totalSpends = spends.reduce((acc, s) => acc + parseFloat(s.amount || 0), 0);
-
-      let totalAgencyProfit = 0;
-      let totalMBCommissions = 0;
-
-      spends.forEach(spend => {
-        const product = state.products.find(p => p.id === spend.productId);
-        if (product) {
-          const marginRate = parseFloat(product.margin || 0) / 100;
-          const cashbackRate = parseFloat(product.cashback || 0) / 100;
-          const spendProfit = spend.amount * (marginRate + cashbackRate);
-          totalAgencyProfit += spendProfit;
-
-          // MB Commission Calculation
-          const mbUser = state.users.find(u => u.id === spend.mbId);
-          if (mbUser && mbUser.commission) {
-            totalMBCommissions += spendProfit * (mbUser.commission / 100);
-          }
-        }
-      });
-
-      return {
-        totalPayments,
-        totalSpends,
-        totalAgencyProfit,
-        totalMBCommissions,
-        remainingBudget: totalPayments - totalSpends
-      };
-    }
-
-    // ==========================================
-    // 4. UI RENDER ENGINE
-    // ==========================================
-    let overviewChartInstance = null;
-
-    function renderApp() {
-      updateLanguageTexts();
-      populateDropdowns();
-
-      const { clients, spends, payments } = getFilteredData(state.deepArchiveMonth);
-      const metrics = calculateMetrics(spends, payments);
-
-      // Render KPIs
-      document.getElementById('kpi-total-payments').innerText = `$${metrics.totalPayments.toFixed(2)}`;
-      document.getElementById('kpi-total-spends').innerText = `$${metrics.totalSpends.toFixed(2)}`;
-      document.getElementById('kpi-remaining-budget').innerText = `$${metrics.remainingBudget.toFixed(2)}`;
-
-      if (state.currentUser === 'admin') {
-        document.getElementById('lbl-kpi-profit').innerText = i18n[state.lang].kpiNetProfit;
-        document.getElementById('kpi-net-profit').innerText = `$${metrics.totalAgencyProfit.toFixed(2)}`;
-        document.getElementById('section-mb-performance').classList.remove('hidden');
-      } else {
-        document.getElementById('lbl-kpi-profit').innerText = i18n[state.lang].tblMBCommission;
-        document.getElementById('kpi-net-profit').innerText = `$${metrics.totalMBCommissions.toFixed(2)}`;
-        document.getElementById('section-mb-performance').classList.add('hidden');
-      }
-
-      // Render Tables & Views
-      renderBudgetStatusTable(clients);
-      renderMBPerformanceTable();
-      renderClientsList();
-      renderPaymentsTable(payments);
-      renderSpendsTable(spends);
-      renderArchivesGrid();
-      renderChart(spends, payments);
-    }
-
-    function updateLanguageTexts() {
-      const dict = i18n[state.lang];
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (dict[key]) el.innerText = dict[key];
-      });
-    }
-
-    function populateDropdowns() {
-      // Users Role Select
-      const roleSelect = document.getElementById('userRoleSelect');
-      roleSelect.innerHTML = `<option value="admin">👤 ${state.lang === 'ar' ? 'المدير العام (Admin)' : 'General Manager (Admin)'}</option>`;
-      state.users.filter(u => u.role === 'mb').forEach(mb => {
-        roleSelect.innerHTML += `<option value="${mb.id}" ${state.currentUser === mb.id ? 'selected' : ''}>👨‍💻 ${mb.name}</option>`;
-      });
-
-      // Assign MB Select
-      const assignSelect = document.getElementById('selectAssignMB');
-      assignSelect.innerHTML = '';
-      state.users.filter(u => u.role === 'mb').forEach(mb => {
-        assignSelect.innerHTML += `<option value="${mb.id}">${mb.name}</option>`;
-      });
-
-      // Filter Clients Select
-      const { clients } = getFilteredData();
-      const filterClient = document.getElementById('filterClientSelect');
-      filterClient.innerHTML = `<option value="ALL">${i18n[state.lang].allClients}</option>`;
-      clients.forEach(c => {
-        filterClient.innerHTML += `<option value="${c.id}" ${state.filters.clientId === c.id ? 'selected' : ''}>${c.name}</option>`;
-      });
-
-      // Filter Products Select
-      const filterProd = document.getElementById('filterProductSelect');
-      filterProd.innerHTML = `<option value="ALL">${i18n[state.lang].allProducts}</option>`;
-      let availableProducts = state.products;
-      if (state.filters.clientId !== 'ALL') {
-        availableProducts = availableProducts.filter(p => p.clientId === state.filters.clientId);
-      }
-      availableProducts.forEach(p => {
-        filterProd.innerHTML += `<option value="${p.id}" ${state.filters.productId === p.id ? 'selected' : ''}>${p.name}</option>`;
-      });
-
-      // Forms Clients Dropdowns
-      ['payClientSelect', 'spendClientSelect'].forEach(selectId => {
-        const el = document.getElementById(selectId);
-        if (el) {
-          el.innerHTML = '';
-          clients.forEach(c => {
-            el.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-          });
-          if (clients.length > 0) {
-            updatePayProductsDropdown(clients[0].id);
-            updateSpendProductsDropdown(clients[0].id);
-          }
-        }
-      });
-    }
-
-    function updatePayProductsDropdown(clientId) {
-      const el = document.getElementById('payProductSelect');
-      el.innerHTML = '';
-      state.products.filter(p => p.clientId === clientId).forEach(p => {
-        el.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-      });
-    }
-
-    function updateSpendProductsDropdown(clientId) {
-      const el = document.getElementById('spendProductSelect');
-      el.innerHTML = '';
-      state.products.filter(p => p.clientId === clientId).forEach(p => {
-        el.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-      });
-    }
-
-    // ==========================================
-    // 5. TABLES RENDERING FUNCTIONS
-    // ==========================================
-    function renderBudgetStatusTable(clients) {
-      const tbody = document.getElementById('budgetStatusTableBody');
-      tbody.innerHTML = '';
-
-      clients.forEach(c => {
-        const cPayments = state.payments.filter(p => p.clientId === c.id).reduce((a, b) => a + parseFloat(b.amount || 0), 0);
-        const cSpends = state.spends.filter(s => s.clientId === c.id).reduce((a, b) => a + parseFloat(b.amount || 0), 0);
-        const remaining = cPayments - cSpends;
-        const burnRate = cPayments > 0 ? (cSpends / cPayments) * 100 : 0;
-
-        let badge = '<span class="bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/20">ممتاز (Good)</span>';
-        if (burnRate >= 90) {
-          badge = '<span class="bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-full border border-rose-500/20 font-bold animate-pulse">نفاد وشيك (Critical)</span>';
-        } else if (burnRate >= 75) {
-          badge = '<span class="bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-full border border-amber-500/20">مرتفع (Warning)</span>';
-        }
-
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-800/40">
-            <td class="p-3 font-bold text-white">${c.name}</td>
-            <td class="p-3 text-emerald-400 font-semibold">$${cPayments.toFixed(2)}</td>
-            <td class="p-3 text-indigo-400 font-semibold">$${cSpends.toFixed(2)}</td>
-            <td class="p-3 font-extrabold text-cyan-400">$${remaining.toFixed(2)}</td>
-            <td class="p-3 font-bold">${burnRate.toFixed(1)}%</td>
-            <td class="p-3">${badge}</td>
-          </tr>
-        `;
-      });
-    }
-
-    function renderMBPerformanceTable() {
-      const tbody = document.getElementById('mbPerformanceTableBody');
-      tbody.innerHTML = '';
-
-      state.users.filter(u => u.role === 'mb').forEach(mb => {
-        const mbClients = state.clients.filter(c => c.mbId === mb.id);
-        const mbClientIds = mbClients.map(c => c.id);
-        const mbSpends = state.spends.filter(s => mbClientIds.includes(s.clientId));
-        
-        const totalSpend = mbSpends.reduce((a, b) => a + parseFloat(b.amount || 0), 0);
-        let agencyProfit = 0;
-        mbSpends.forEach(s => {
-          const prod = state.products.find(p => p.id === s.productId);
-          if (prod) agencyProfit += s.amount * ((parseFloat(prod.margin) + parseFloat(prod.cashback)) / 100);
-        });
-        const mbComm = agencyProfit * (mb.commission / 100);
-
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-800/40">
-            <td class="p-3 font-bold text-white">${mb.name}</td>
-            <td class="p-3">${mbClients.length}</td>
-            <td class="p-3 text-indigo-400 font-bold">$${totalSpend.toFixed(2)}</td>
-            <td class="p-3 text-emerald-400 font-bold">$${agencyProfit.toFixed(2)}</td>
-            <td class="p-3 text-amber-400 font-extrabold">$${mbComm.toFixed(2)} (${mb.commission}%)</td>
-          </tr>
-        `;
-      });
-    }
-
-    function renderClientsList() {
-      const container = document.getElementById('clientsListContainer');
-      container.innerHTML = '';
-
-      const { clients } = getFilteredData();
-      clients.forEach(c => {
-        const mb = state.users.find(u => u.id === c.mbId);
-        const cProds = state.products.filter(p => p.clientId === c.id);
-
-        let prodsHTML = '';
-        cProds.forEach(p => {
-          prodsHTML += `
-            <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/50 flex items-center justify-between text-xs">
-              <span class="font-bold text-slate-200">${p.name}</span>
-              <div class="flex gap-3 text-slate-400">
-                <span>Margin: <b class="text-emerald-400">${p.margin}%</b></span>
-                <span>Cashback: <b class="text-indigo-400">${p.cashback}%</b></span>
-              </div>
+    <!-- Printable Receipt Modal -->
+    <div id="receiptModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white text-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="text-center border-b pb-4">
+                <h2 class="text-2xl font-extrabold text-indigo-600">Ad Impact Agency</h2>
+                <p class="text-xs text-slate-500 mt-1">وصل شحن ميزانية إعلانية / Receipt</p>
             </div>
-          `;
-        });
-
-        container.innerHTML += `
-          <div class="bg-slate-800/30 border border-slate-800 rounded-xl p-4 space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h3 class="font-extrabold text-slate-100 text-sm">${c.name}</h3>
-              <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2.5 py-1 rounded-full border border-indigo-500/20">
-                ${mb ? mb.name : 'Unassigned'}
-              </span>
+            <div class="space-y-2 text-xs">
+                <div class="flex justify-between"><span>الزبون:</span><span id="rcpClient" class="font-bold"></span></div>
+                <div class="flex justify-between"><span>المنتج المخصص:</span><span id="rcpProduct" class="font-bold"></span></div>
+                <div class="flex justify-between"><span>تاريخ الاستلام:</span><span id="rcpDate" class="font-bold"></span></div>
+                <div class="flex justify-between border-t border-b py-2 my-2 text-sm"><span>المبلغ المستلم:</span><span id="rcpAmount" class="font-bold text-indigo-600"></span></div>
+                <div class="flex justify-between"><span>ملاحظات:</span><span id="rcpNote"></span></div>
             </div>
-            <div class="space-y-2">${prodsHTML}</div>
-          </div>
-        `;
-      });
-    }
-
-    function renderPaymentsTable(payments) {
-      const tbody = document.getElementById('paymentsTableBody');
-      tbody.innerHTML = '';
-
-      payments.forEach(p => {
-        const client = state.clients.find(c => c.id === p.clientId);
-        const prod = state.products.find(pr => pr.id === p.productId);
-
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-800/40">
-            <td class="p-3 font-semibold text-slate-400">${p.date}</td>
-            <td class="p-3 font-bold text-white">${client ? client.name : '-'}</td>
-            <td class="p-3 text-slate-300">${prod ? prod.name : '-'}</td>
-            <td class="p-3 font-extrabold text-emerald-400">$${parseFloat(p.amount).toFixed(2)}</td>
-            <td class="p-3">
-              <button onclick="openInvoiceModal('${p.id}')" class="bg-slate-800 hover:bg-slate-700 text-indigo-400 p-2 rounded-lg" title="عرض الوصل">
-                <i class="fa-solid fa-receipt"></i>
-              </button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    function renderSpendsTable(spends) {
-      const tbody = document.getElementById('spendsTableBody');
-      tbody.innerHTML = '';
-
-      spends.forEach(s => {
-        const client = state.clients.find(c => c.id === s.clientId);
-        const prod = state.products.find(pr => pr.id === s.productId);
-        let profit = 0;
-        if (prod) profit = s.amount * ((parseFloat(prod.margin) + parseFloat(prod.cashback)) / 100);
-
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-800/40">
-            <td class="p-3 font-semibold text-slate-400">${s.date}</td>
-            <td class="p-3 font-bold text-white">${client ? client.name : '-'}</td>
-            <td class="p-3 text-slate-300">${prod ? prod.name : '-'}</td>
-            <td class="p-3"><span class="bg-slate-800 px-2 py-0.5 rounded text-indigo-300">${s.platform}</span></td>
-            <td class="p-3 font-bold text-indigo-400">$${parseFloat(s.amount).toFixed(2)}</td>
-            <td class="p-3 font-bold text-amber-400">$${profit.toFixed(2)}</td>
-            <td class="p-3">
-              <button onclick="deleteSpend('${s.id}')" class="text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    // ==========================================
-    // 6. ARCHIVE & DEEP VIEW SYSTEM
-    // ==========================================
-    function renderArchivesGrid() {
-      const grid = document.getElementById('archivesGrid');
-      grid.innerHTML = '';
-
-      // Get all unique YYYY-MM
-      const months = new Set();
-      state.spends.forEach(s => months.add(s.date.substring(0, 7)));
-      state.payments.forEach(p => months.add(p.date.substring(0, 7)));
-
-      Array.from(months).sort().reverse().forEach(m => {
-        const { spends, payments } = getFilteredData(m);
-        const mMetrics = calculateMetrics(spends, payments);
-
-        grid.innerHTML += `
-          <div onclick="enterDeepArchive('${m}')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/50 p-5 rounded-xl shadow-lg cursor-pointer transition space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h3 class="font-black text-lg text-white">${m}</h3>
-              <i class="fa-solid fa-folder-open text-indigo-400 text-lg"></i>
+            <div class="pt-4 flex gap-2">
+                <button onclick="window.print()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-xl text-xs">طباعة الوصل</button>
+                <button onclick="closeReceiptModal()" class="w-full bg-slate-200 text-slate-800 font-bold py-2 rounded-xl text-xs">إغلاق</button>
             </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div><p class="text-slate-400">الشحن:</p><p class="font-bold text-emerald-400">$${mMetrics.totalPayments.toFixed(2)}</p></div>
-              <div><p class="text-slate-400">الصرف:</p><p class="font-bold text-indigo-400">$${mMetrics.totalSpends.toFixed(2)}</p></div>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    function enterDeepArchive(monthStr) {
-      state.deepArchiveMonth = monthStr;
-      document.getElementById('archivesGrid').classList.add('hidden');
-      document.getElementById('deepArchiveContainer').classList.remove('hidden');
-      document.getElementById('btnBackToMonths').classList.remove('hidden');
-      document.getElementById('deepArchiveMonthTitle').innerText = monthStr;
-
-      const { spends, payments } = getFilteredData(monthStr);
-      const metrics = calculateMetrics(spends, payments);
-
-      document.getElementById('archKpiPaid').innerText = `$${metrics.totalPayments.toFixed(2)}`;
-      document.getElementById('archKpiSpent').innerText = `$${metrics.totalSpends.toFixed(2)}`;
-      document.getElementById('archKpiProfit').innerText = `$${metrics.totalAgencyProfit.toFixed(2)}`;
-
-      // Render inner tables
-      const payTbody = document.getElementById('archPayTableBody');
-      payTbody.innerHTML = '';
-      payments.forEach(p => {
-        const client = state.clients.find(c => c.id === p.clientId);
-        payTbody.innerHTML += `<tr><td class="p-2">${p.date}</td><td class="p-2">${client?client.name:'-'}</td><td class="p-2 text-emerald-400 font-bold">$${p.amount}</td></tr>`;
-      });
-
-      const spendTbody = document.getElementById('archSpendTableBody');
-      spendTbody.innerHTML = '';
-      spends.forEach(s => {
-        const client = state.clients.find(c => c.id === s.clientId);
-        const prod = state.products.find(pr => pr.id === s.productId);
-        let profit = prod ? s.amount * ((parseFloat(prod.margin) + parseFloat(prod.cashback)) / 100) : 0;
-        spendTbody.innerHTML += `<tr><td class="p-2">${s.date}</td><td class="p-2">${client?client.name:'-'}</td><td class="p-2 text-indigo-400 font-bold">$${s.amount}</td><td class="p-2 text-amber-400 font-bold">$${profit.toFixed(2)}</td></tr>`;
-      });
-    }
-
-    function exitDeepArchive() {
-      state.deepArchiveMonth = null;
-      document.getElementById('archivesGrid').classList.remove('hidden');
-      document.getElementById('deepArchiveContainer').classList.add('hidden');
-      document.getElementById('btnBackToMonths').classList.add('hidden');
-    }
-
-    // ==========================================
-    // 7. CHART ENGINE (Chart.js)
-    // ==========================================
-    function renderChart(spends, payments) {
-      const ctx = document.getElementById('overviewChart').getContext('2d');
-      if (overviewChartInstance) overviewChartInstance.destroy();
-
-      // Aggregate payments & spends by date
-      const dateMap = {};
-      spends.forEach(s => {
-        dateMap[s.date] = dateMap[s.date] || { paid: 0, spent: 0 };
-        dateMap[s.date].spent += parseFloat(s.amount || 0);
-      });
-      payments.forEach(p => {
-        dateMap[p.date] = dateMap[p.date] || { paid: 0, spent: 0 };
-        dateMap[p.date].paid += parseFloat(p.amount || 0);
-      });
-
-      const labels = Object.keys(dateMap).sort();
-      const paidData = labels.map(d => dateMap[d].paid);
-      const spentData = labels.map(d => dateMap[d].spent);
-
-      overviewChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            { label: 'الشحن ($)', data: paidData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 },
-            { label: 'الصرف اليومي ($)', data: spentData, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.3 }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94a3b8' } } },
-          scales: {
-            x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
-            y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
-          }
-        }
-      });
-    }
-
-    // ==========================================
-    // 8. FORMS & ACTIONS HANDLERS
-    // ==========================================
-    function handleAddClient(e) {
-      e.preventDefault();
-      const clientName = document.getElementById('inputClientName').value;
-      const mbId = document.getElementById('selectAssignMB').value;
-      const prodName = document.getElementById('inputProductName').value;
-      const margin = document.getElementById('inputMargin').value;
-      const cashback = document.getElementById('inputCashback').value;
-
-      const clientId = 'c_' + Date.now();
-      const prodId = 'p_' + Date.now();
-
-      state.clients.push({ id: clientId, name: clientName, mbId });
-      state.products.push({ id: prodId, clientId, name: prodName, margin, cashback });
-
-      document.getElementById('formAddClient').reset();
-      saveState();
-    }
-
-    function handleAddPayment(e) {
-      e.preventDefault();
-      const clientId = document.getElementById('payClientSelect').value;
-      const productId = document.getElementById('payProductSelect').value;
-      const amount = document.getElementById('payAmount').value;
-      const date = document.getElementById('payDate').value;
-      const note = document.getElementById('payNote').value;
-
-      state.payments.push({
-        id: 'pay_' + Date.now(),
-        clientId, productId, amount, date, note,
-        receiptNo: 'INV-' + Math.floor(1000 + Math.random() * 9000)
-      });
-
-      document.getElementById('formAddPayment').reset();
-      saveState();
-    }
-
-    function handleAddSpend(e) {
-      e.preventDefault();
-      const clientId = document.getElementById('spendClientSelect').value;
-      const productId = document.getElementById('spendProductSelect').value;
-      const platform = document.getElementById('spendPlatform').value;
-      const amount = document.getElementById('spendAmount').value;
-      const date = document.getElementById('spendDate').value;
-
-      const client = state.clients.find(c => c.id === clientId);
-
-      state.spends.push({
-        id: 's_' + Date.now(),
-        clientId, productId, platform, amount, date,
-        mbId: client ? client.mbId : 'admin'
-      });
-
-      document.getElementById('formAddSpend').reset();
-      saveState();
-    }
-
-    function deleteSpend(id) {
-      if (confirm('هل أنت تأكد من مسح هذه الدفعة؟')) {
-        state.spends = state.spends.filter(s => s.id !== id);
-        saveState();
-      }
-    }
-
-    function applyFilters() {
-      state.filters.clientId = document.getElementById('filterClientSelect').value;
-      state.filters.productId = document.getElementById('filterProductSelect').value;
-      state.filters.startDate = document.getElementById('filterStartDate').value;
-      state.filters.endDate = document.getElementById('filterEndDate').value;
-      renderApp();
-    }
-
-    function changeUserRole(val) {
-      state.currentUser = val;
-      renderApp();
-    }
-
-    function switchTab(tabKey) {
-      state.activeTab = tabKey;
-      document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
-      document.getElementById(`view-${tabKey}`).classList.remove('hidden');
-
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('border-indigo-500', 'text-indigo-400');
-        btn.classList.add('border-transparent', 'text-slate-400');
-      });
-      document.getElementById(`tab-${tabKey}`).classList.add('border-indigo-500', 'text-indigo-400');
-      document.getElementById(`tab-${tabKey}`).classList.remove('border-transparent', 'text-slate-400');
-    }
-
-    // Modal Invoice
-    function openInvoiceModal(payId) {
-      const pay = state.payments.find(p => p.id === payId);
-      if (!pay) return;
-      const client = state.clients.find(c => c.id === pay.clientId);
-      const prod = state.products.find(pr => pr.id === pay.productId);
-
-      const modalContent = document.getElementById('invoiceModalContent');
-      modalContent.innerHTML = `
-        <div class="p-3 bg-slate-100 rounded-lg space-y-2">
-          <div class="flex justify-between font-bold"><span>رقم الوصل:</span><span>${pay.receiptNo}</span></div>
-          <div class="flex justify-between"><span>التاريخ:</span><span>${pay.date}</span></div>
-          <div class="flex justify-between"><span>الزبون:</span><span>${client?client.name:'-'}</span></div>
-          <div class="flex justify-between"><span>المنتج:</span><span>${prod?prod.name:'-'}</span></div>
-          <div class="flex justify-between text-indigo-600 font-extrabold text-sm border-t pt-2"><span>المبلغ المعبأ:</span><span>$${pay.amount}</span></div>
-          ${pay.note ? `<div class="text-slate-500 text-xs">ملاحظات: ${pay.note}</div>` : ''}
         </div>
-      `;
-      document.getElementById('invoiceModal').classList.remove('hidden');
-    }
+    </div>
 
-    function closeInvoiceModal() {
-      document.getElementById('invoiceModal').classList.add('hidden');
-    }
+    <script>
+        // Data Structures stored in LocalStorage
+        let clients = JSON.parse(localStorage.getItem('app_v2_clients')) || [
+            {
+                id: 'c1',
+                name: 'عبد الحق',
+                products: [
+                    { name: 'Pantalon Palazzo', margin: 15, cashback: 2 },
+                    { name: 'بيجامة نسائية', margin: 20, cashback: 0 }
+                ]
+            }
+        ];
 
-    // Export & Backup
-    function exportDatabaseJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `AdImpact_Backup_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
+        let payments = JSON.parse(localStorage.getItem('app_v2_payments')) || [
+            { id: 101, clientId: 'c1', clientName: 'عبد الحق', productName: 'Pantalon Palazzo', amount: 500, date: '2026-08-15', note: 'تحويل CCP' }
+        ];
 
-    function importDatabaseJSON(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        try {
-          state = JSON.parse(event.target.result);
-          saveState();
-          alert('تمت استعادة البيانات بنجاح!');
-        } catch (err) {
-          alert('خطأ في تنسيق ملف JSON');
+        let spends = JSON.parse(localStorage.getItem('app_v2_spends')) || [
+            { id: 201, clientId: 'c1', clientName: 'عبد الحق', productName: 'Pantalon Palazzo', platform: 'Meta Ads', amount: 150, date: '2026-08-18' }
+        ];
+
+        let chartInstance = null;
+
+        // Navigation Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('text-slate-400');
+            });
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('bg-indigo-600', 'text-white');
+            event.currentTarget.classList.remove('text-slate-400');
+
+            if (tabId === 'tab-dashboard') renderDashboard();
+            if (tabId === 'tab-payments') renderPaymentsView();
+            if (tabId === 'tab-daily-spend') renderSpendsView();
+            if (tabId === 'tab-clients') renderClientsView();
+            if (tabId === 'tab-archives') renderArchivesView();
         }
-      };
-      reader.readAsText(file);
-    }
 
-    function resetAllData() {
-      if (confirm('تنبيه هام: هل أنت متأكد من مسح جميع البيانات والإعادة إلى الوضع الافتراضي؟')) {
-        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        saveState();
-      }
-    }
+        // --- DASHBOARD LOGIC ---
+        function renderDashboard() {
+            populateDashboardFilters();
+            applyFilters();
+        }
 
-    // CSV Export for Deep Archive
-    function exportArchiveCSV() {
-      if (!state.deepArchiveMonth) return;
-      const { spends, payments } = getFilteredData(state.deepArchiveMonth);
-      let csvContent = "data:text/csv;charset=utf-8,Type,Date,Client,Product,Amount\n";
+        function populateDashboardFilters() {
+            const clientBox = document.getElementById('filterClientsBox');
+            clientBox.innerHTML = '';
+            clients.forEach(c => {
+                clientBox.innerHTML += `<label class="flex items-center gap-2"><input type="checkbox" value="${c.name}" checked onchange="onClientFilterChange()"> ${c.name}</label>`;
+            });
+            onClientFilterChange();
+        }
 
-      payments.forEach(p => {
-        const c = state.clients.find(cl => cl.id === p.clientId);
-        const pr = state.products.find(prod => prod.id === p.productId);
-        csvContent += `Payment,${p.date},"${c?c.name:''}","${pr?pr.name:''}",${p.amount}\n`;
-      });
-      spends.forEach(s => {
-        const c = state.clients.find(cl => cl.id === s.clientId);
-        const pr = state.products.find(prod => prod.id === s.productId);
-        csvContent += `Spend,${s.date},"${c?c.name:''}","${pr?pr.name:''}",${s.amount}\n`;
-      });
+        function onClientFilterChange() {
+            const selectedClients = Array.from(document.querySelectorAll('#filterClientsBox input:checked')).map(cb => cb.value);
+            const prodBox = document.getElementById('filterProductsBox');
+            prodBox.innerHTML = '';
 
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Archive_${state.deepArchiveMonth}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }
+            const availableProducts = new Set();
+            clients.filter(c => selectedClients.includes(c.name)).forEach(c => c.products.forEach(p => availableProducts.add(p.name)));
 
-    // INITIALIZATION
-    window.onload = function() {
-      // Set today date as default in forms
-      const today = new Date().toISOString().split('T')[0];
-      if (document.getElementById('payDate')) document.getElementById('payDate').value = today;
-      if (document.getElementById('spendDate')) document.getElementById('spendDate').value = today;
+            availableProducts.forEach(prod => {
+                prodBox.innerHTML += `<label class="flex items-center gap-2"><input type="checkbox" value="${prod}" checked onchange="applyFilters()"> ${prod}</label>`;
+            });
+            applyFilters();
+        }
 
-      renderApp();
-    };
-  </script>
+        function applyFilters() {
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            const selectedClients = Array.from(document.querySelectorAll('#filterClientsBox input:checked')).map(cb => cb.value);
+            const selectedProducts = Array.from(document.querySelectorAll('#filterProductsBox input:checked')).map(cb => cb.value);
+            const selectedPlatforms = Array.from(document.querySelectorAll('#filterPlatformsBox input:checked')).map(cb => cb.value);
+
+            // Filtered Payments
+            const filteredPayments = payments.filter(p => {
+                const matchDate = (!startDate || p.date >= startDate) && (!endDate || p.date <= endDate);
+                return matchDate && selectedClients.includes(p.clientName) && selectedProducts.includes(p.productName);
+            });
+
+            // Filtered Spends
+            const filteredSpends = spends.filter(s => {
+                const matchDate = (!startDate || s.date >= startDate) && (!endDate || s.date <= endDate);
+                return matchDate && selectedClients.includes(s.clientName) && selectedProducts.includes(s.productName) && selectedPlatforms.includes(s.platform);
+            });
+
+            const totalPayments = filteredPayments.reduce((acc, curr) => acc + curr.amount, 0);
+            const totalSpend = filteredSpends.reduce((acc, curr) => acc + curr.amount, 0);
+
+            // Calculate profit (Ad spend * Margin% + Cashback%)
+            let totalProfit = 0;
+            filteredSpends.forEach(s => {
+                const cli = clients.find(c => c.name === s.clientName);
+                if (cli) {
+                    const prod = cli.products.find(p => p.name === s.productName);
+                    if (prod) {
+                        const totalRate = (prod.margin || 0) + (prod.cashback || 0);
+                        totalProfit += s.amount * (totalRate / 100);
+                    }
+                }
+            });
+
+            document.getElementById('kpiTotalPayments').innerText = `$${totalPayments.toFixed(2)}`;
+            document.getElementById('kpiTotalSpend').innerText = `$${totalSpend.toFixed(2)}`;
+            document.getElementById('kpiTotalProfit').innerText = `$${totalProfit.toFixed(2)}`;
+            document.getElementById('kpiRemainingBudget').innerText = `$${(totalPayments - totalSpend).toFixed(2)}`;
+
+            renderMainFinanceChart(filteredPayments, filteredSpends);
+            renderBudgetStatusTable();
+        }
+
+        function renderMainFinanceChart(filteredPayments, filteredSpends) {
+            const ctx = document.getElementById('mainFinanceChart').getContext('2d');
+            const dates = [...new Set([...filteredPayments.map(p => p.date), ...filteredSpends.map(s => s.date)])].sort();
+
+            const payData = dates.map(d => filteredPayments.filter(p => p.date === d).reduce((a, b) => a + b.amount, 0));
+            const spendData = dates.map(d => filteredSpends.filter(s => s.date === d).reduce((a, b) => a + b.amount, 0));
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        { label: 'المدفوعات ($)', data: payData, borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.1)', tension: 0.3, fill: true },
+                        { label: 'الصرف الإعلاني ($)', data: spendData, borderColor: '#fb7185', backgroundColor: 'rgba(251,113,133,0.1)', tension: 0.3, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    }
+                }
+            });
+        }
+
+        function renderBudgetStatusTable() {
+            const tbody = document.getElementById('budgetStatusTable');
+            tbody.innerHTML = '';
+
+            clients.forEach(cli => {
+                cli.products.forEach(prod => {
+                    const totalPay = payments.filter(p => p.clientName === cli.name && p.productName === prod.name).reduce((a, b) => a + b.amount, 0);
+                    const totalSp = spends.filter(s => s.clientName === cli.name && s.productName === prod.name).reduce((a, b) => a + b.amount, 0);
+                    const remaining = totalPay - totalSp;
+                    const usedPercentage = totalPay > 0 ? Math.min(100, (totalSp / totalPay) * 100) : 0;
+
+                    let alertBadge = `<span class="text-emerald-400 font-bold">${usedPercentage.toFixed(1)}%</span>`;
+                    if (usedPercentage >= 85) alertBadge = `<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded font-bold">⚠️ تنبيه نفاد (${usedPercentage.toFixed(1)}%)</span>`;
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/40">
+                            <td class="p-4 font-bold text-white">${cli.name}</td>
+                            <td class="p-4">${prod.name}</td>
+                            <td class="p-4 font-semibold text-sky-400">$${totalPay.toFixed(2)}</td>
+                            <td class="p-4 font-semibold text-rose-400">$${totalSp.toFixed(2)}</td>
+                            <td class="p-4 font-bold ${remaining < 50 ? 'text-rose-400' : 'text-emerald-400'}">$${remaining.toFixed(2)}</td>
+                            <td class="p-4">${alertBadge}</td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        // --- PAYMENTS & ALLOCATION LOGIC ---
+        function renderPaymentsView() {
+            const select = document.getElementById('payClientSelect');
+            select.innerHTML = '<option value="">-- اختر زبوناً --</option>';
+            clients.forEach(c => select.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+            document.getElementById('payDate').value = new Date().toISOString().split('T')[0];
+            renderPaymentsHistoryTable();
+        }
+
+        function updatePayProductDropdown() {
+            const clientId = document.getElementById('payClientSelect').value;
+            const prodSelect = document.getElementById('payProductSelect');
+            prodSelect.innerHTML = '<option value="">-- اختر المنتج --</option>';
+            const cli = clients.find(c => c.id === clientId);
+            if (cli) {
+                cli.products.forEach(p => prodSelect.innerHTML += `<option value="${p.name}">${p.name}</option>`);
+            }
+        }
+
+        function addPaymentRecord(e) {
+            e.preventDefault();
+            const clientId = document.getElementById('payClientSelect').value;
+            const cli = clients.find(c => c.id === clientId);
+            const productName = document.getElementById('payProductSelect').value;
+            const amount = parseFloat(document.getElementById('payAmount').value);
+            const date = document.getElementById('payDate').value;
+            const note = document.getElementById('payNote').value;
+
+            const record = { id: Date.now(), clientId, clientName: cli.name, productName, amount, date, note };
+            payments.push(record);
+            localStorage.setItem('app_v2_payments', JSON.stringify(payments));
+
+            showReceiptModal(record);
+            renderPaymentsHistoryTable();
+            e.target.reset();
+            renderPaymentsView();
+        }
+
+        function renderPaymentsHistoryTable() {
+            const tbody = document.getElementById('paymentsHistoryTable');
+            tbody.innerHTML = '';
+            payments.slice().reverse().forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-4 text-slate-400">${p.date}</td>
+                        <td class="p-4 font-bold text-white">${p.clientName}</td>
+                        <td class="p-4 text-indigo-300 font-medium">${p.productName}</td>
+                        <td class="p-4 font-bold text-emerald-400">$${p.amount.toFixed(2)}</td>
+                        <td class="p-4 text-slate-400">${p.note || '-'}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="deletePayment(${p.id})" class="text-rose-400 hover:underline">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deletePayment(id) {
+            payments = payments.filter(p => p.id !== id);
+            localStorage.setItem('app_v2_payments', JSON.stringify(payments));
+            renderPaymentsHistoryTable();
+        }
+
+        // --- SPENDS LOGIC ---
+        function renderSpendsView() {
+            const select = document.getElementById('spClientSelect');
+            select.innerHTML = '<option value="">-- اختر زبوناً --</option>';
+            clients.forEach(c => select.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+            document.getElementById('spDate').value = new Date().toISOString().split('T')[0];
+            renderSpendsHistoryTable();
+        }
+
+        function updateSpProductDropdown() {
+            const clientId = document.getElementById('spClientSelect').value;
+            const prodSelect = document.getElementById('spProductSelect');
+            prodSelect.innerHTML = '<option value="">-- اختر المنتج --</option>';
+            const cli = clients.find(c => c.id === clientId);
+            if (cli) {
+                cli.products.forEach(p => prodSelect.innerHTML += `<option value="${p.name}">${p.name}</option>`);
+            }
+        }
+
+        function addSpendRecord(e) {
+            e.preventDefault();
+            const clientId = document.getElementById('spClientSelect').value;
+            const cli = clients.find(c => c.id === clientId);
+            const productName = document.getElementById('spProductSelect').value;
+            const platform = document.getElementById('spPlatform').value;
+            const amount = parseFloat(document.getElementById('spAmount').value);
+            const date = document.getElementById('spDate').value;
+
+            spends.push({ id: Date.now(), clientId, clientName: cli.name, productName, platform, amount, date });
+            localStorage.setItem('app_v2_spends', JSON.stringify(spends));
+
+            renderSpendsHistoryTable();
+            e.target.reset();
+            renderSpendsView();
+        }
+
+        function renderSpendsHistoryTable() {
+            const tbody = document.getElementById('spendsHistoryTable');
+            tbody.innerHTML = '';
+            spends.slice().reverse().forEach(s => {
+                const cli = clients.find(c => c.name === s.clientName);
+                let profit = 0;
+                if (cli) {
+                    const prod = cli.products.find(p => p.name === s.productName);
+                    if (prod) profit = s.amount * (((prod.margin || 0) + (prod.cashback || 0)) / 100);
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-4 text-slate-400">${s.date}</td>
+                        <td class="p-4 font-bold text-white">${s.clientName}</td>
+                        <td class="p-4 text-indigo-300 font-medium">${s.productName}</td>
+                        <td class="p-4"><span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-xs font-semibold">${s.platform}</span></td>
+                        <td class="p-4 font-bold text-rose-400">$${s.amount.toFixed(2)}</td>
+                        <td class="p-4 font-bold text-emerald-400">$${profit.toFixed(2)}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="deleteSpend(${s.id})" class="text-rose-400 hover:underline">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteSpend(id) {
+            spends = spends.filter(s => s.id !== id);
+            localStorage.setItem('app_v2_spends', JSON.stringify(spends));
+            renderSpendsHistoryTable();
+        }
+
+        // --- CLIENT SETUP LOGIC ---
+        function addProductInputRow(name='', margin='', cashback='') {
+            const container = document.getElementById('productInputsContainer');
+            const row = document.createElement('div');
+            row.className = "p-3 bg-slate-900 border border-slate-700 rounded-xl space-y-2 prod-input-row";
+            row.innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input type="text" placeholder="اسم المنتج" value="${name}" required class="prod-inp-name bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white">
+                    <input type="number" step="0.1" placeholder="نسبة الربح من الصرف (%)" value="${margin}" required class="prod-inp-margin bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white">
+                    <input type="number" step="0.1" placeholder="كاشباك الحساب (%)" value="${cashback}" class="prod-inp-cashback bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white">
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-xs text-rose-400 hover:underline">حذف المنتج</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function saveClientWithProducts(e) {
+            e.preventDefault();
+            const name = document.getElementById('cliName').value.trim();
+            const rows = document.querySelectorAll('.prod-input-row');
+            
+            const products = [];
+            rows.forEach(r => {
+                const pName = r.querySelector('.prod-inp-name').value.trim();
+                const margin = parseFloat(r.querySelector('.prod-inp-margin').value) || 0;
+                const cashback = parseFloat(r.querySelector('.prod-inp-cashback').value) || 0;
+                if (pName) products.push({ name: pName, margin, cashback });
+            });
+
+            clients.push({ id: 'c_' + Date.now(), name, products });
+            localStorage.setItem('app_v2_clients', JSON.stringify(clients));
+
+            e.target.reset();
+            document.getElementById('productInputsContainer').innerHTML = '';
+            addProductInputRow();
+            renderClientsView();
+        }
+
+        function renderClientsView() {
+            const list = document.getElementById('clientsCardsList');
+            list.innerHTML = '';
+            clients.forEach(cli => {
+                const prodsList = cli.products.map(p => `
+                    <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-xs flex justify-between items-center mt-2">
+                        <span class="font-bold text-indigo-300">${p.name}</span>
+                        <div class="text-slate-400">عمولة: <span class="text-emerald-400 font-bold">${p.margin}%</span> | كاشباك: <span class="text-sky-400 font-bold">${p.cashback}%</span></div>
+                    </div>
+                `).join('');
+
+                list.innerHTML += `
+                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="font-bold text-white">${cli.name}</h4>
+                            <button onclick="deleteClient('${cli.id}')" class="text-xs text-rose-400 hover:underline">حذف الزبون</button>
+                        </div>
+                        ${prodsList}
+                    </div>
+                `;
+            });
+        }
+
+        function deleteClient(id) {
+            clients = clients.filter(c => c.id !== id);
+            localStorage.setItem('app_v2_clients', JSON.stringify(clients));
+            renderClientsView();
+        }
+
+        // --- ARCHIVES LOGIC ---
+        function renderArchivesView() {
+            const grid = document.getElementById('monthlyArchivesGrid');
+            grid.innerHTML = '';
+
+            const months = [...new Set([...payments.map(p => p.date.substring(0,7)), ...spends.map(s => s.date.substring(0,7))])].sort().reverse();
+
+            months.forEach(m => {
+                const mPay = payments.filter(p => p.date.startsWith(m)).reduce((a, b) => a + b.amount, 0);
+                const mSp = spends.filter(s => s.date.startsWith(m)).reduce((a, b) => a + b.amount, 0);
+
+                grid.innerHTML += `
+                    <div class="bg-slate-800 border border-slate-700 p-5 rounded-2xl space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                            <h3 class="font-bold text-indigo-300">أرشيف شهر: ${m}</h3>
+                            <button onclick="deleteMonthArchive('${m}')" class="text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-lg hover:bg-rose-600 hover:text-white transition">حذف شهر ${m}</button>
+                        </div>
+                        <div class="text-xs space-y-1">
+                            <div class="flex justify-between"><span>إجمالي مقبوضات الشهر:</span><span class="font-bold text-sky-400">$${mPay.toFixed(2)}</span></div>
+                            <div class="flex justify-between"><span>إجمالي المصروف إعلانياً:</span><span class="font-bold text-rose-400">$${mSp.toFixed(2)}</span></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteMonthArchive(month) {
+            if (confirm(`هل أنت تأكد من حذف بيانات شهر ${month} نهائياً؟`)) {
+                payments = payments.filter(p => !p.date.startsWith(month));
+                spends = spends.filter(s => !s.date.startsWith(month));
+                localStorage.setItem('app_v2_payments', JSON.stringify(payments));
+                localStorage.setItem('app_v2_spends', JSON.stringify(spends));
+                renderArchivesView();
+            }
+        }
+
+        // --- RECEIPT MODAL LOGIC ---
+        function showReceiptModal(record) {
+            document.getElementById('rcpClient').innerText = record.clientName;
+            document.getElementById('rcpProduct').innerText = record.productName;
+            document.getElementById('rcpDate').innerText = record.date;
+            document.getElementById('rcpAmount').innerText = `$${record.amount.toFixed(2)}`;
+            document.getElementById('rcpNote').innerText = record.note || 'لا يوجد';
+            document.getElementById('receiptModal').classList.remove('hidden');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receiptModal').classList.add('hidden');
+        }
+
+        // Init
+        addProductInputRow();
+        renderDashboard();
+    </script>
 </body>
 </html>
